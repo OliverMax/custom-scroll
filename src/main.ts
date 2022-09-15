@@ -1,6 +1,8 @@
 import "./style.scss";
 import { scroll } from './utils/dom';
 
+const TYPE: 'none' | 'linear' | 'ease' = 'linear';
+const IF_NEED = false;
 const ALIGN_X: 'left' | 'center' | 'right' = 'center';
 const ALIGN_Y: 'top' | 'center' | 'bottom' = 'center';
 
@@ -16,8 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (blockEl instanceof HTMLLIElement) {
         scroll(blockEl, {
+          type: TYPE,
           container: sectionEl,
-          ifNeed: false,
+          ifNeed: IF_NEED,
           alignX: ALIGN_X,
           alignY: ALIGN_Y,
         });
@@ -28,13 +31,12 @@ document.addEventListener('DOMContentLoaded', () => {
   sectionEl?.addEventListener('click', ({ target }) => {
     if (target instanceof HTMLLIElement) {
       scroll(target, {
+        type: TYPE,
         container: sectionEl,
-        ifNeed: false,
+        ifNeed: IF_NEED,
         alignX: ALIGN_X,
         alignY: ALIGN_Y,
       });
     }
   });
 });
-
-// scrollTo или scrollTop
