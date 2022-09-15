@@ -1,6 +1,5 @@
-// TODO: скролить, пока есть куда. т.е. если после таргета ещё есть место
+// !FIXME: скролить, пока есть куда. т.е. если после таргета ещё есть место
 // TODO: должен возвращать промис
-// TODO: время высчитывать исходя из расстояния
 
 import { isFits, getDistance, getPosition } from './';
 
@@ -62,39 +61,42 @@ export default function scroll(target: HTMLLIElement, settings?: Settings) {
     distanceY -= containerHeight - targetHeight;
   }
 
+  const ANIMATION_STEP = 5;
+
+  let animationId: null | number = null;
+  let animationProgress = 0;
+
   switch (type) {
-    case 'none':
+    case 'none': {
       container.scrollTop = scrollOffsetY + distanceY;
       container.scrollLeft = scrollOffsetX + distanceX;
       break;
+    }
 
-    case 'linear':
-      const STEP = 5;
-
-      let progress = 0;
-      let id: null | number = null;
-
+    case 'linear': {
       const r = () => {
-        progress += STEP;
+        animationProgress += ANIMATION_STEP;
 
-        if (progress < 100) {
-          container.scrollLeft = scrollOffsetX + ((distanceX * progress) / 100);
-          container.scrollTop = scrollOffsetY + ((distanceY * progress) / 100);
+        if (animationProgress < 100) {
+          container.scrollLeft = scrollOffsetX + ((distanceX * animationProgress) / 100);
+          container.scrollTop = scrollOffsetY + ((distanceY * animationProgress) / 100);
 
-          id = requestAnimationFrame(r);
-        } else if (id !== null) {
+          animationId = requestAnimationFrame(r);
+        } else if (animationId !== null) {
           container.scrollLeft = scrollOffsetX + distanceX;
           container.scrollTop = scrollOffsetY + distanceY;
 
-          cancelAnimationFrame(id);
+          cancelAnimationFrame(animationId);
         }
       };
 
       r();
 
       break;
+    }
 
-    case 'ease':
+    case 'ease': {
       break;
+    }
   }
 };
