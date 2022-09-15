@@ -1,6 +1,3 @@
-// !FIXME: скролить, пока есть куда. т.е. если после таргета ещё есть место
-// TODO: должен возвращать промис
-
 import { isFits, getDistance, getPosition } from './';
 
 interface Settings {
@@ -11,6 +8,7 @@ interface Settings {
   container?: HTMLElement
 };
 
+// TODO: долженa возвращать промис
 export default function scroll(target: HTMLLIElement, settings?: Settings) {
   const {
     type,
@@ -49,6 +47,7 @@ export default function scroll(target: HTMLLIElement, settings?: Settings) {
     height: targetHeight,
   } = getPosition(target);
 
+  // !FIXME: сделать поправку на оставшееся место после блока
   if (alignX === 'center') {
     distanceX -= (containerWidth / 2) - (targetWidth / 2);
   } else if (alignX === 'right') {
@@ -77,25 +76,22 @@ export default function scroll(target: HTMLLIElement, settings?: Settings) {
       const r = () => {
         animationProgress += ANIMATION_STEP;
 
-        if (animationProgress < 100) {
-          container.scrollLeft = scrollOffsetX + ((distanceX * animationProgress) / 100);
-          container.scrollTop = scrollOffsetY + ((distanceY * animationProgress) / 100);
+        container.scrollLeft = scrollOffsetX + ((distanceX * animationProgress) / 100);
+        container.scrollTop = scrollOffsetY + ((distanceY * animationProgress) / 100);
 
+        if (animationProgress < 100) {
           animationId = requestAnimationFrame(r);
         } else if (animationId !== null) {
-          container.scrollLeft = scrollOffsetX + distanceX;
-          container.scrollTop = scrollOffsetY + distanceY;
-
           cancelAnimationFrame(animationId);
         }
       };
 
       r();
-
       break;
     }
 
     case 'ease': {
+      // TODO
       break;
     }
   }

@@ -3,6 +3,9 @@
   outline: none;
 }
 
+$BLOCKS_COUNT: 986;
+$BLOCK_SIZE: 200px;
+
 body {
   margin: 0;
   padding: 15px;
@@ -35,7 +38,7 @@ body {
       flex-wrap: wrap;
       gap: 28px;
   
-      $size: calc(986 * 5px);
+      $size: calc($BLOCKS_COUNT * 5px);
       width: $size;
       height: $size;
   
@@ -50,9 +53,8 @@ body {
   
         transition: background 0.15s ease;
   
-        // $size: 260px;
-        width: 260px;
-        height: 221px;
+        width: $BLOCK_SIZE;
+        height: $BLOCK_SIZE;
 
         color: #333;
         user-select: none;
