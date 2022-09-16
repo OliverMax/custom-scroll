@@ -61,15 +61,17 @@ export default function customScroll(
   distanceX -= alignCorrection.x;
   distanceY -= alignCorrection.y;
 
-  const scrollDirection = getScrollDirection();
   const scrollSpace = getScrollSpace();
 
+  // correct distance depend on available scroll space
   // !FIXME: сделать поправку на оставшееся место после блока
-  // correct distance depends on available scroll space
+
+  const scrollDirection = getScrollDirection();
 
   if (scrollDirection.x || scrollDirection.y) {
-    const ANIMATION_STEP = 8;
+    const destination = getDestination();
 
+    const ANIMATION_STEP = 8;
     let animationId: null | number = null;
     let animationProgress = 0;
   
@@ -77,26 +79,24 @@ export default function customScroll(
   
     switch (type) {
       case 'none': {
-        container.scrollTop = scrollOffsetY + distanceY;
-        container.scrollLeft = scrollOffsetX + distanceX;
+        scrollX(destination.x);
+        scrollY(destination.y);
       }
   
       case 'linear': {
-        // TODO: debounce. чекнуть флаг - вызывать или нет
-        // TODO: можно остановить анимацию - отменой промиса
-  
         const resolver = (resolve = () => {}) => {
-          console.log('+');
           animationProgress += ANIMATION_STEP;
   
           if (animationProgress < 100) {
-            container.scrollLeft = scrollOffsetX + ((distanceX * animationProgress) / 100);
-            container.scrollTop = scrollOffsetY + ((distanceY * animationProgress) / 100);
+            // TODO?: replace by using destination instead full calculations
+            scrollX(scrollOffsetX + ((distanceX * animationProgress) / 100));
+            scrollY(scrollOffsetY + ((distanceY * animationProgress) / 100));
   
             animationId = requestAnimationFrame(() => resolver(resolve));
           } else if (animationId !== null) {
-            container.scrollTop = scrollOffsetY + distanceY;
-            container.scrollLeft = scrollOffsetX + distanceX;
+            scrollX(destination.x);
+            scrollY(destination.y);
+
             resolve();
             cancelAnimationFrame(animationId);
           }
@@ -170,4 +170,23 @@ export default function customScroll(
       bottom: scrollSpaceBottom,
     };
   };
+
+  function getDestination() {
+    return {
+      x: scrollOffsetX + distanceX,
+      y: scrollOffsetY + distanceY,
+    };
+  }
+
+  function scrollX(distance: number) {
+    if (scrollDirection.x) {
+      container!.scrollLeft = distance;
+    }
+  }
+
+  function scrollY(distance: number) {
+    if (scrollDirection.y) {
+      container!.scrollTop = distance;
+    }
+  }
 };
