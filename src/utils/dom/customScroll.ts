@@ -1,4 +1,4 @@
-// TODO: split code
+// TODO: split code, refactor
 import { isFits, getDistance, getPosition } from '.';
 
 interface Settings {
@@ -71,8 +71,9 @@ export default function customScroll(
   if (scrollDirection.x || scrollDirection.y) {
     const destination = getDestination();
 
-    const ANIMATION_STEP = 8;
-    let animationId: null | number = null;
+    const ANIMATION_STEP = 1;
+
+    let rafId: null | number = null;
     let animationProgress = 0;
   
     // TODO: остановить скролл, если юзер начал скролить
@@ -92,13 +93,13 @@ export default function customScroll(
             scrollX(scrollOffsetX + ((distanceX * animationProgress) / 100));
             scrollY(scrollOffsetY + ((distanceY * animationProgress) / 100));
   
-            animationId = requestAnimationFrame(() => resolver(resolve));
-          } else if (animationId !== null) {
+            rafId = requestAnimationFrame(() => resolver(resolve));
+          } else {
             scrollX(destination.x);
             scrollY(destination.y);
 
             resolve();
-            cancelAnimationFrame(animationId);
+            stopAnimation();
           }
         };
   
@@ -108,6 +109,12 @@ export default function customScroll(
       case 'ease': {
         // TODO
         break;
+      }
+    }
+
+    function stopAnimation() {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
       }
     }
   }
