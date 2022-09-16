@@ -2,7 +2,7 @@ import "./style.scss";
 import { scroll } from './utils/dom';
 
 const TYPE: 'none' | 'linear' | 'ease' = 'linear';
-const IF_NEED = true;
+const IF_NEED = false;
 const ALIGN_X: 'left' | 'center' | 'right' = 'center';
 const ALIGN_Y: 'top' | 'center' | 'bottom' = 'center';
 

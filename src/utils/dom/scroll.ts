@@ -8,6 +8,7 @@ interface Settings {
   container?: HTMLElement
 };
 
+// TODO: JSDoc
 export default function scroll(
   target: HTMLLIElement,
   settings?: Settings,
@@ -40,16 +41,25 @@ export default function scroll(
   } = getDistance(target, container);
 
   const {
+    left: containerX,
+    top: containerY,
     width: containerWidth,
     height: containerHeight,
   } = getPosition(container);
 
   const {
+    left: targetX,
+    top: targetY,
     width: targetWidth,
     height: targetHeight,
   } = getPosition(target);
 
-  // !FIXME: сделать поправку на оставшееся место после блока
+  const {
+    scrollWidth,
+    scrollHeight,
+  } = target.parentElement!;
+
+  // correct distance by align
   if (alignX === 'center') {
     distanceX -= (containerWidth / 2) - (targetWidth / 2);
   } else if (alignX === 'right') {
@@ -62,25 +72,31 @@ export default function scroll(
     distanceY -= containerHeight - targetHeight;
   }
 
+  // !FIXME: сделать поправку на оставшееся место после блока
+  const scrollSpaceLeft = targetX - containerX + scrollOffsetX;
+  const scrollSpaceRight = scrollWidth - (scrollSpaceLeft + targetWidth);
+  const scrollSpaceTop = targetY - containerY + scrollOffsetY;
+  const scrollSpaceBottom = scrollHeight - (scrollSpaceTop + targetHeight);
+
   const ANIMATION_STEP = 8;
 
   let animationId: null | number = null;
   let animationProgress = 0;
 
   // TODO: остановить скролл, если юзер начал скролить
-  // TODO: rename
-  const scrollToDestination = () => {
-    container.scrollTop = scrollOffsetY + distanceY;
-    container.scrollLeft = scrollOffsetX + distanceX;
-  };
 
   switch (type) {
     case 'none': {
-      return scrollToDestination();
+      container.scrollTop = scrollOffsetY + distanceY;
+      container.scrollLeft = scrollOffsetX + distanceX;
     }
 
     case 'linear': {
+      // TODO: debounce. чекнуть флаг - вызывать или нет
+      // TODO: можно остановить анимацию - отменой промиса
+
       const resolver = (resolve = () => {}) => {
+        console.log('+');
         animationProgress += ANIMATION_STEP;
 
         if (animationProgress < 100) {
@@ -89,7 +105,8 @@ export default function scroll(
 
           animationId = requestAnimationFrame(() => resolver(resolve));
         } else if (animationId !== null) {
-          scrollToDestination();
+          container.scrollTop = scrollOffsetY + distanceY;
+          container.scrollLeft = scrollOffsetX + distanceX;
           resolve();
           cancelAnimationFrame(animationId);
         }
