@@ -1,5 +1,5 @@
 import "./style.scss";
-import { scroll } from './utils/dom';
+import { customScroll } from './utils/dom';
 
 const TYPE: 'none' | 'linear' | 'ease' = 'linear';
 const IF_NEED = false;
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const blockEl = findBlockEl(inputEl.value);
       
       if (blockEl instanceof HTMLLIElement) {
-        scroll(blockEl, {
+        customScroll(blockEl, {
           type: TYPE,
           container: sectionEl,
           ifNeed: IF_NEED,
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   sectionEl?.addEventListener('click', ({ target }) => {
     if (target instanceof HTMLLIElement) {
-      scroll(target, {
+      customScroll(target, {
         type: TYPE,
         container: sectionEl,
         ifNeed: IF_NEED,

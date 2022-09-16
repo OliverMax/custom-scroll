@@ -1,6 +1,5 @@
 // TODO: split code
-
-import { isFits, getDistance, getPosition } from './';
+import { isFits, getDistance, getPosition } from '.';
 
 interface Settings {
   type?: 'none' | 'linear' | 'ease'
@@ -10,11 +9,8 @@ interface Settings {
   container?: HTMLElement
 };
 
-type ScrollDirectionX = 'left' | 'right';
-type ScrollDirectionY = 'top' | 'bottom';
-
 // TODO: JSDoc
-export default function scroll(
+export default function customScroll(
   target: HTMLLIElement,
   settings?: Settings,
 ): Promise<void> | void {
@@ -35,10 +31,12 @@ export default function scroll(
 
   if (ifNeed && isFits(target, container)) return;
 
+  const scroll = target.parentElement!;
+
   const {
     x: scrollOffsetX,
     y: scrollOffsetY,
-  } = getDistance(container, target.parentElement!);
+  } = getDistance(container, scroll);
 
   let {
     x: distanceX,
@@ -59,14 +57,7 @@ export default function scroll(
     height: targetHeight,
   } = getPosition(target);
 
-  const {
-    scrollWidth,
-    scrollHeight,
-  } = target.parentElement!;
-
   const alignCorrection = getAlignCorrection();
-
-  // apply align corrections
   distanceX -= alignCorrection.x;
   distanceY -= alignCorrection.y;
 
@@ -146,8 +137,8 @@ export default function scroll(
   }
 
   function getScrollDirection() {
-    let x: null | ScrollDirectionX = null;
-    let y: null | ScrollDirectionY = null;
+    let x: null | 'left' | 'right' = null;
+    let y: null | 'top' | 'bottom' = null;
     
     if (distanceX > 0) {
       x = 'right';
@@ -161,13 +152,12 @@ export default function scroll(
       y = 'bottom';
     }
 
-    return {
-      x: x,
-      y: y,
-    };
+    return { x, y };
   }
 
   function getScrollSpace() {
+    const { scrollWidth, scrollHeight } = scroll;
+
     const scrollSpaceLeft = targetX - containerX + scrollOffsetX;
     const scrollSpaceRight = scrollWidth - (scrollSpaceLeft + targetWidth);
     const scrollSpaceTop = targetY - containerY + scrollOffsetY;
