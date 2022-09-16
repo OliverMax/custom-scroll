@@ -2,7 +2,7 @@ import "./style.scss";
 import { scroll } from './utils/dom';
 
 const TYPE: 'none' | 'linear' | 'ease' = 'linear';
-const IF_NEED = false;
+const IF_NEED = true;
 const ALIGN_X: 'left' | 'center' | 'right' = 'center';
 const ALIGN_Y: 'top' | 'center' | 'bottom' = 'center';
 
@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
           ifNeed: IF_NEED,
           alignX: ALIGN_X,
           alignY: ALIGN_Y,
+        })?.then(() => {
+          console.log('+');
         });
       }
     }
@@ -36,7 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ifNeed: IF_NEED,
         alignX: ALIGN_X,
         alignY: ALIGN_Y,
-      });
+      })?.then(() => {
+        console.log('+');
+      });;
     }
   });
 });

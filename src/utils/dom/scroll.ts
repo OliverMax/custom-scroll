@@ -8,8 +8,10 @@ interface Settings {
   container?: HTMLElement
 };
 
-// TODO: долженa возвращать промис
-export default function scroll(target: HTMLLIElement, settings?: Settings) {
+export default function scroll(
+  target: HTMLLIElement,
+  settings?: Settings,
+): Promise<void> | undefined | void {
   const {
     type,
     alignY,
@@ -60,34 +62,40 @@ export default function scroll(target: HTMLLIElement, settings?: Settings) {
     distanceY -= containerHeight - targetHeight;
   }
 
-  const ANIMATION_STEP = 5;
+  const ANIMATION_STEP = 8;
 
   let animationId: null | number = null;
   let animationProgress = 0;
 
+  // TODO: остановить скролл, если юзер начал скролить
+  // TODO: rename
+  const scrollToDestination = () => {
+    container.scrollTop = scrollOffsetY + distanceY;
+    container.scrollLeft = scrollOffsetX + distanceX;
+  };
+
   switch (type) {
     case 'none': {
-      container.scrollTop = scrollOffsetY + distanceY;
-      container.scrollLeft = scrollOffsetX + distanceX;
-      break;
+      return scrollToDestination();
     }
 
     case 'linear': {
-      const r = () => {
+      const resolver = (resolve = () => {}) => {
         animationProgress += ANIMATION_STEP;
 
-        container.scrollLeft = scrollOffsetX + ((distanceX * animationProgress) / 100);
-        container.scrollTop = scrollOffsetY + ((distanceY * animationProgress) / 100);
-
         if (animationProgress < 100) {
-          animationId = requestAnimationFrame(r);
+          container.scrollLeft = scrollOffsetX + ((distanceX * animationProgress) / 100);
+          container.scrollTop = scrollOffsetY + ((distanceY * animationProgress) / 100);
+
+          animationId = requestAnimationFrame(() => resolver(resolve));
         } else if (animationId !== null) {
+          scrollToDestination();
+          resolve();
           cancelAnimationFrame(animationId);
         }
       };
 
-      r();
-      break;
+      return new Promise(resolver);
     }
 
     case 'ease': {
