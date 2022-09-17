@@ -61,22 +61,31 @@ export default function customScroll(
   distanceX -= alignCorrection.x;
   distanceY -= alignCorrection.y;
 
-  const scrollSpace = getScrollSpace();
+  const scrollDirection = getScrollDirection();
+  const destination = getDestination();
 
   // correct distance depend on available scroll space
-  // !FIXME: сделать поправку на оставшееся место после блока
+  {
+    // left
+    if (destination.x < 0) {
+      distanceX = -scrollOffsetX;
+    }
 
-  const scrollDirection = getScrollDirection();
+    // top
+    if (destination.y < 0) {
+      distanceY = -scrollOffsetY;
+    }
+
+    // right
+  }
 
   if (scrollDirection.x || scrollDirection.y) {
-    const destination = getDestination();
-
-    const ANIMATION_STEP = 1;
+    const ANIMATION_STEP = 8;
 
     let rafId: null | number = null;
     let animationProgress = 0;
   
-    // TODO: остановить скролл, если юзер начал скролить
+    container.onwheel = stopAnimation;
   
     switch (type) {
       case 'none': {
@@ -186,13 +195,13 @@ export default function customScroll(
   }
 
   function scrollX(distance: number) {
-    if (scrollDirection.x) {
+    if (scrollDirection.x && Math.abs(distanceX) > 0) {
       container!.scrollLeft = distance;
     }
   }
 
   function scrollY(distance: number) {
-    if (scrollDirection.y) {
+    if (scrollDirection.y && Math.abs(distanceY) > 0) {
       container!.scrollTop = distance;
     }
   }
