@@ -22,7 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
         ifNeed: IF_NEED,
         alignX: ALIGN_X,
         alignY: ALIGN_Y,
-      });
+      })
+        ?.then(() => {
+          console.log('+');
+        });
     }
   });
 
@@ -34,7 +37,10 @@ document.addEventListener('DOMContentLoaded', () => {
         ifNeed: IF_NEED,
         alignX: ALIGN_X,
         alignY: ALIGN_Y,
-      });
+      })
+        ?.then(() => {
+          console.log('+');
+        });
     }
   });
 });

@@ -1,8 +1,7 @@
-// https://www.mathway.com/ru/Graph
-
 // TODO: refactoring. split code
 
 import { getDistance, getPosition, isFits } from '.';
+import { axisRound } from '../helpers';
 
 interface Settings {
   type?: 'none' | 'linear' | 'ease'
@@ -64,16 +63,32 @@ export default function customScroll(
   distanceX -= alignCorrection.x;
   distanceY -= alignCorrection.y;
 
-  const scrollDirection = getScrollDirection();
   const destination = getDestination();
 
   // TODO: correct distance depend on available scroll space
+  {
+    // left
+    if (destination.x < 0) {
+      distanceX = -scrollOffsetX;
+    }
 
-  if (scrollDirection.x || scrollDirection.y) {
-    const STEP = 3;
+    // top
+    if (destination.y < 0) {
+      distanceY = -scrollOffsetY;
+    }
 
-    let rafId: null | number = null;
-    let progress = 0;
+    // right
+    // bottom
+  }
+
+  distanceX = axisRound(distanceX);
+  distanceY = axisRound(distanceY);
+  
+  if (distanceX !== 0 || distanceY !== 0) {
+    const ANIMATION_STEP = 3;
+
+    let animationId: null | number = null;
+    let animationProgress = 0;
 
     container.onwheel = stopAnimation;
 
@@ -86,13 +101,13 @@ export default function customScroll(
 
       case 'linear': {
         const resolver = (resolve = () => {}) => {
-          progress += STEP;
+          animationProgress += ANIMATION_STEP;
 
-          if (progress < 100) {
-            scrollX(scrollOffsetX + (distanceX * progress) / 100);
-            scrollY(scrollOffsetY + (distanceY * progress) / 100);
+          if (animationProgress < 100) {
+            scrollX(scrollOffsetX + (distanceX * animationProgress) / 100);
+            scrollY(scrollOffsetY + (distanceY * animationProgress) / 100);
 
-            rafId = requestAnimationFrame(() => resolver(resolve));
+            animationId = requestAnimationFrame(() => resolver(resolve));
           } else {
             scrollX(destination.x);
             scrollY(destination.y);
@@ -106,26 +121,28 @@ export default function customScroll(
       }
 
       case 'ease': {
+        // https://www.mathway.com/ru/Graph
+
         const getParabolaHeight = (percent: number) => 2 * Math.pow(percent, 2);
         const MAX_PARABOLA_HEIGHT = getParabolaHeight(100);
 
-        // convert parabola height to percent 
-        const toPercent = (height: number) => (200 * height) / MAX_PARABOLA_HEIGHT;
+        // convert parabola height to percent
+        const toPercent = (height: number) => (200 * height) / MAX_PARABOLA_HEIGHT; // TODO: rename
 
         let distancePercent;
 
         const resolver = (resolve = () => {}) => {
-          progress += STEP;
+          animationProgress += ANIMATION_STEP;
 
-          distancePercent = progress <= 50
-            ? toPercent(getParabolaHeight(progress))
-            : 50 + (50 - toPercent(getParabolaHeight(100 - progress)));
+          distancePercent = animationProgress <= 50
+            ? toPercent(getParabolaHeight(animationProgress))
+            : 50 + (50 - toPercent(getParabolaHeight(100 - animationProgress)));
 
           scrollX(scrollOffsetX + (distanceX * distancePercent) / 100);
           scrollY(scrollOffsetY + (distanceY * distancePercent) / 100);
 
-          if (progress < 100) {
-            rafId = requestAnimationFrame(() => resolver(resolve));
+          if (animationProgress < 100) {
+            animationId = requestAnimationFrame(() => resolver(resolve));
           } else {
             resolve();
             stopAnimation();
@@ -137,8 +154,8 @@ export default function customScroll(
     }
 
     function stopAnimation() {
-      if (rafId) {
-        cancelAnimationFrame(rafId);
+      if (animationId) {
+        cancelAnimationFrame(animationId);
       }
     }
   }
@@ -166,25 +183,6 @@ export default function customScroll(
     };
   }
 
-  function getScrollDirection() {
-    let x: null | 'left' | 'right' = null;
-    let y: null | 'top' | 'bottom' = null;
-
-    if (distanceX > 0) {
-      x = 'right';
-    } else if (distanceX < 0) {
-      x = 'left';
-    }
-
-    if (distanceY < 0) {
-      y = 'top';
-    } else if (distanceY > 0) {
-      y = 'bottom';
-    }
-
-    return { x, y };
-  }
-
   // @ts-ignore
   function getScrollSpace() {
     const { scrollWidth, scrollHeight } = scroll;
@@ -210,13 +208,13 @@ export default function customScroll(
   }
 
   function scrollX(distance: number) {
-    if (scrollDirection.x && Math.abs(distanceX) > 0) {
+    if (distanceX !== 0) {
       container!.scrollLeft = distance;
     }
   }
 
   function scrollY(distance: number) {
-    if (scrollDirection.y && Math.abs(distanceY) > 0) {
+    if (distanceY !== 0) {
       container!.scrollTop = distance;
     }
   }
