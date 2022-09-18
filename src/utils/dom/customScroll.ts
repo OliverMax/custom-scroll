@@ -1,4 +1,4 @@
-// TODO: split code, refactor
+// https://www.mathway.com/ru/Graph
 import { isFits, getDistance, getPosition } from '.';
 
 interface Settings {
@@ -7,7 +7,7 @@ interface Settings {
   alignX?: 'left' | 'center' | 'right'
   ifNeed?: boolean
   container?: HTMLElement
-};
+}
 
 // TODO: JSDoc
 export default function customScroll(
@@ -64,26 +64,13 @@ export default function customScroll(
   const scrollDirection = getScrollDirection();
   const destination = getDestination();
 
-  // correct distance depend on available scroll space
-  {
-    // left
-    if (destination.x < 0) {
-      distanceX = -scrollOffsetX;
-    }
-
-    // top
-    if (destination.y < 0) {
-      distanceY = -scrollOffsetY;
-    }
-
-    // right
-  }
+  // TODO: correct distance depend on available scroll space
 
   if (scrollDirection.x || scrollDirection.y) {
-    const ANIMATION_STEP = 8;
+    const STEP = 3;
 
     let rafId: null | number = null;
-    let animationProgress = 0;
+    let progress = 0;
   
     container.onwheel = stopAnimation;
   
@@ -91,16 +78,16 @@ export default function customScroll(
       case 'none': {
         scrollX(destination.x);
         scrollY(destination.y);
+        break;
       }
   
       case 'linear': {
         const resolver = (resolve = () => {}) => {
-          animationProgress += ANIMATION_STEP;
+          progress += STEP;
   
-          if (animationProgress < 100) {
-            // TODO?: replace by using destination instead full calculations
-            scrollX(scrollOffsetX + ((distanceX * animationProgress) / 100));
-            scrollY(scrollOffsetY + ((distanceY * animationProgress) / 100));
+          if (progress < 100) {
+            scrollX(scrollOffsetX + (distanceX * progress) / 100);
+            scrollY(scrollOffsetY + (distanceY * progress) / 100);
   
             rafId = requestAnimationFrame(() => resolver(resolve));
           } else {
@@ -114,10 +101,35 @@ export default function customScroll(
   
         return new Promise(resolver);
       }
-  
+
       case 'ease': {
-        // TODO
-        break;
+        const getParabolaHeight = (percent: number) => 2 * Math.pow(percent, 2);
+        const MAX_PARABOLA_HEIGHT = getParabolaHeight(100);
+
+        // convert parabola height to percent 
+        const toPercent = (height: number) => (200 * height) / MAX_PARABOLA_HEIGHT;
+        
+        let distancePercent;
+
+        const resolver = (resolve = () => {}) => {
+          progress += STEP;
+          
+          distancePercent = progress <= 50
+            ? toPercent(getParabolaHeight(progress))
+            : 50 + (50 - toPercent(getParabolaHeight(100 - progress)));
+          
+          scrollX(scrollOffsetX + (distanceX * distancePercent) / 100);
+          scrollY(scrollOffsetY + (distanceY * distancePercent) / 100);
+
+          if (progress < 100) {
+            rafId = requestAnimationFrame(() => resolver(resolve));
+          } else {
+            resolve();
+            stopAnimation();
+          }
+        };
+
+        return new Promise(resolver);
       }
     }
 
@@ -128,7 +140,6 @@ export default function customScroll(
     }
   }
 
-  // fn's
   function getAlignCorrection() {
     let alignCorrectionX = 0,
         alignCorrectionY = 0;
@@ -171,6 +182,7 @@ export default function customScroll(
     return { x, y };
   }
 
+  // @ts-ignore
   function getScrollSpace() {
     const { scrollWidth, scrollHeight } = scroll;
 
@@ -185,7 +197,7 @@ export default function customScroll(
       right: scrollSpaceRight,
       bottom: scrollSpaceBottom,
     };
-  };
+  }
 
   function getDestination() {
     return {

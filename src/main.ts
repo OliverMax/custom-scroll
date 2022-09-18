@@ -1,7 +1,7 @@
 import "./style.scss";
 import { customScroll } from './utils/dom';
 
-const TYPE: 'none' | 'linear' | 'ease' = 'linear';
+const TYPE: 'none' | 'linear' | 'ease' = 'ease';
 const IF_NEED = false;
 const ALIGN_X: 'left' | 'center' | 'right' = 'center';
 const ALIGN_Y: 'top' | 'center' | 'bottom' = 'center';
