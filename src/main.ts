@@ -12,19 +12,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const findBlockEl = (id: string) => document.getElementById(id);
 
-  inputEl?.addEventListener('keydown', ({ key }) => {
-    if (key === 'Enter') {
-      const blockEl = findBlockEl(inputEl.value);
-      
-      if (blockEl instanceof HTMLLIElement) {
-        customScroll(blockEl, {
-          type: TYPE,
-          container: sectionEl,
-          ifNeed: IF_NEED,
-          alignX: ALIGN_X,
-          alignY: ALIGN_Y,
-        });
-      }
+  inputEl?.addEventListener('change', () => {
+    const blockEl = findBlockEl(inputEl.value);
+    
+    if (blockEl instanceof HTMLLIElement) {
+      customScroll(blockEl, {
+        type: TYPE,
+        container: sectionEl,
+        ifNeed: IF_NEED,
+        alignX: ALIGN_X,
+        alignY: ALIGN_Y,
+      });
     }
   });
 

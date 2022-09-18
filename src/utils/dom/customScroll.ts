@@ -1,5 +1,8 @@
 // https://www.mathway.com/ru/Graph
-import { isFits, getDistance, getPosition } from '.';
+
+// TODO: refactoring. split code
+
+import { getDistance, getPosition, isFits } from '.';
 
 interface Settings {
   type?: 'none' | 'linear' | 'ease'
@@ -71,24 +74,24 @@ export default function customScroll(
 
     let rafId: null | number = null;
     let progress = 0;
-  
+
     container.onwheel = stopAnimation;
-  
+
     switch (type) {
       case 'none': {
         scrollX(destination.x);
         scrollY(destination.y);
         break;
       }
-  
+
       case 'linear': {
         const resolver = (resolve = () => {}) => {
           progress += STEP;
-  
+
           if (progress < 100) {
             scrollX(scrollOffsetX + (distanceX * progress) / 100);
             scrollY(scrollOffsetY + (distanceY * progress) / 100);
-  
+
             rafId = requestAnimationFrame(() => resolver(resolve));
           } else {
             scrollX(destination.x);
@@ -98,7 +101,7 @@ export default function customScroll(
             stopAnimation();
           }
         };
-  
+
         return new Promise(resolver);
       }
 
@@ -108,16 +111,16 @@ export default function customScroll(
 
         // convert parabola height to percent 
         const toPercent = (height: number) => (200 * height) / MAX_PARABOLA_HEIGHT;
-        
+
         let distancePercent;
 
         const resolver = (resolve = () => {}) => {
           progress += STEP;
-          
+
           distancePercent = progress <= 50
             ? toPercent(getParabolaHeight(progress))
             : 50 + (50 - toPercent(getParabolaHeight(100 - progress)));
-          
+
           scrollX(scrollOffsetX + (distanceX * distancePercent) / 100);
           scrollY(scrollOffsetY + (distanceY * distancePercent) / 100);
 
@@ -166,13 +169,13 @@ export default function customScroll(
   function getScrollDirection() {
     let x: null | 'left' | 'right' = null;
     let y: null | 'top' | 'bottom' = null;
-    
+
     if (distanceX > 0) {
       x = 'right';
     } else if (distanceX < 0) {
       x = 'left';
     }
-  
+
     if (distanceY < 0) {
       y = 'top';
     } else if (distanceY > 0) {
