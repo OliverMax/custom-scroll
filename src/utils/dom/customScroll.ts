@@ -1,3 +1,4 @@
+// TODO: tests
 // TODO: refactoring. split code
 
 import { getDistance, getPosition, isFits } from '.';
@@ -35,56 +36,49 @@ export default function customScroll(
 
   const scroll = target.parentElement!;
 
-  const {
-    x: scrollOffsetX,
-    y: scrollOffsetY,
-  } = getDistance(container, scroll);
-
-  let {
-    x: distanceX,
-    y: distanceY,
-  } = getDistance(target, container);
+  const distance = getDistance(target, container);
 
   const {
-    left: containerX,
-    top: containerY,
     width: containerWidth,
     height: containerHeight,
   } = getPosition(container);
 
   const {
-    left: targetX,
-    top: targetY,
     width: targetWidth,
     height: targetHeight,
   } = getPosition(target);
 
+  const { scrollWidth, scrollHeight } = scroll;
+  
+  const scrollOffset = getScrollOffset();
+
   const alignCorrection = getAlignCorrection();
-  distanceX -= alignCorrection.x;
-  distanceY -= alignCorrection.y;
+  distance.x -= alignCorrection.x;
+  distance.y -= alignCorrection.y;
 
   const destination = getDestination();
 
-  // TODO: correct distance depend on available scroll space
-  {
-    // left
-    if (destination.x < 0) {
-      distanceX = -scrollOffsetX;
-    }
-
-    // top
-    if (destination.y < 0) {
-      distanceY = -scrollOffsetY;
-    }
-
-    // right
-    // bottom
+  //  correct distance depend on available scroll space
+  if (destination.x < 0) {
+    distance.x = -scrollOffset.left;
   }
 
-  distanceX = axisRound(distanceX);
-  distanceY = axisRound(distanceY);
+  if (destination.y < 0) {
+    distance.y = -scrollOffset.top;
+  }
+
+  if (distance.x > scrollOffset.right) {
+    distance.x = scrollOffset.right;
+  }
+
+  if (distance.y > scrollOffset.bottom) {
+    distance.y = scrollOffset.bottom;
+  }
+
+  distance.x = axisRound(distance.x);
+  distance.y = axisRound(distance.y);
   
-  if (distanceX !== 0 || distanceY !== 0) {
+  if (distance.x !== 0 || distance.y !== 0) {
     const ANIMATION_STEP = 3;
 
     let animationId: null | number = null;
@@ -104,8 +98,8 @@ export default function customScroll(
           animationProgress += ANIMATION_STEP;
 
           if (animationProgress < 100) {
-            scrollX(scrollOffsetX + (distanceX * animationProgress) / 100);
-            scrollY(scrollOffsetY + (distanceY * animationProgress) / 100);
+            scrollX(scrollOffset.left + (distance.x * animationProgress) / 100);
+            scrollY(scrollOffset.top + (distance.y * animationProgress) / 100);
 
             animationId = requestAnimationFrame(() => resolver(resolve));
           } else {
@@ -138,8 +132,8 @@ export default function customScroll(
             ? toPercent(getParabolaHeight(animationProgress))
             : 50 + (50 - toPercent(getParabolaHeight(100 - animationProgress)));
 
-          scrollX(scrollOffsetX + (distanceX * distancePercent) / 100);
-          scrollY(scrollOffsetY + (distanceY * distancePercent) / 100);
+          scrollX(scrollOffset.left + (distance.x * distancePercent) / 100);
+          scrollY(scrollOffset.top + (distance.y * distancePercent) / 100);
 
           if (animationProgress < 100) {
             animationId = requestAnimationFrame(() => resolver(resolve));
@@ -183,39 +177,33 @@ export default function customScroll(
     };
   }
 
-  // @ts-ignore
-  function getScrollSpace() {
-    const { scrollWidth, scrollHeight } = scroll;
-
-    const scrollSpaceLeft = targetX - containerX + scrollOffsetX;
-    const scrollSpaceRight = scrollWidth - (scrollSpaceLeft + targetWidth);
-    const scrollSpaceTop = targetY - containerY + scrollOffsetY;
-    const scrollSpaceBottom = scrollHeight - (scrollSpaceTop + targetHeight);
+  function getScrollOffset() {
+    const { x, y } = getDistance(container!, scroll);
 
     return {
-      left: scrollSpaceLeft,
-      top: scrollSpaceTop,
-      right: scrollSpaceRight,
-      bottom: scrollSpaceBottom,
+      left: x,
+      top: y,
+      right: Math.abs(x + containerWidth - scrollWidth),
+      bottom: Math.abs(y + containerHeight - scrollHeight),
     };
   }
 
   function getDestination() {
     return {
-      x: scrollOffsetX + distanceX,
-      y: scrollOffsetY + distanceY,
+      x: scrollOffset.left + distance.x,
+      y: scrollOffset.top + distance.y,
     };
   }
 
-  function scrollX(distance: number) {
-    if (distanceX !== 0) {
-      container!.scrollLeft = distance;
+  function scrollX(value: number) {
+    if (distance.x !== 0) {
+      container!.scrollLeft = value;
     }
   }
 
-  function scrollY(distance: number) {
-    if (distanceY !== 0) {
-      container!.scrollTop = distance;
+  function scrollY(value: number) {
+    if (distance.y !== 0) {
+      container!.scrollTop = value;
     }
   }
 };
