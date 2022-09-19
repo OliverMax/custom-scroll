@@ -86,7 +86,7 @@ export default function customScroll(
   distance.y = axisRound(distance.y);
 
   if (distance.x !== 0 || distance.y !== 0) {
-    const ANIMATION_STEP = 1;
+    const ANIMATION_STEP = 3;
 
     let animationId: null | number = null;
     let animationProgress = 0;
