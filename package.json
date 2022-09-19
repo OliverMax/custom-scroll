@@ -1,7 +1,20 @@
 {
-  "name": "vite-sandbox",
+  "name": "custom-scroll",
+  "description": "Custom implementation of native scrollIntoView",
+  "keywords": [
+    "scroll",
+    "custom scroll",
+    "scrollIntoView"
+  ],
+  "license": "MIT",
+  "main": "dist/custom-scroll.umd.cjs",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "author": "Oliver Max <zexely@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OliverMax/custom-scroll"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
