@@ -1,6 +1,8 @@
 import { getDistance, getPosition, isFits, isHTMLElement } from '.';
 import { axisRound } from '../helpers';
 
+const IN_PROGRESS_KEY = Symbol();
+
 interface Settings {
   type?: 'none' | 'linear' | 'smooth'
   alignY?: 'top' | 'center' | 'bottom'
@@ -29,7 +31,7 @@ interface Settings {
  * }
  */
 export default function customScroll(
-  target: HTMLLIElement,
+  target: HTMLLIElement & { [IN_PROGRESS_KEY]: undefined | boolean },
   settings?: Settings,
 ): Promise<void> | void {
   const {
@@ -47,11 +49,14 @@ export default function customScroll(
     ...settings,
   };
 
-  if (!isHTMLElement(target) && !isHTMLElement(container)) return;
-  if (ifNeed && isFits(target, container)) return;
+  if (
+    (!isHTMLElement(target) && !isHTMLElement(container)) ||
+    (ifNeed && isFits(target, container)) ||
+    target[IN_PROGRESS_KEY] === true
+  ) return;
 
   // !WARN: Do not change the order of code execution
-  
+
   const scroll = target.parentElement!;
   const distance = getDistance(target, container);
 
@@ -66,7 +71,7 @@ export default function customScroll(
   } = getPosition(target);
 
   const { scrollWidth, scrollHeight } = scroll;
-  
+
   const scrollOffset = getScrollOffset();
 
   const alignCorrection = getAlignCorrection();
@@ -79,12 +84,14 @@ export default function customScroll(
 
   distance.x = axisRound(distance.x);
   distance.y = axisRound(distance.y);
-  
+
   if (distance.x !== 0 || distance.y !== 0) {
-    const ANIMATION_STEP = 3;
+    const ANIMATION_STEP = 1;
 
     let animationId: null | number = null;
     let animationProgress = 0;
+
+    target[IN_PROGRESS_KEY] = true;
 
     container.onwheel = stopAnimation;
 
@@ -140,8 +147,8 @@ export default function customScroll(
           if (animationProgress < 100) {
             animationId = requestAnimationFrame(() => resolver(resolve));
           } else {
-            resolve();
             stopAnimation();
+            resolve();
           }
         };
 
@@ -152,6 +159,7 @@ export default function customScroll(
     function stopAnimation() {
       if (animationId) {
         cancelAnimationFrame(animationId);
+        target[IN_PROGRESS_KEY] = false;
       }
     }
   }
