@@ -1,18 +1,33 @@
-// TODO: tests
-// TODO: refactoring. split code
-
-import { getDistance, getPosition, isFits } from '.';
+import { getDistance, getPosition, isFits, isHTMLElement } from '.';
 import { axisRound } from '../helpers';
 
 interface Settings {
-  type?: 'none' | 'linear' | 'ease'
+  type?: 'none' | 'linear' | 'smooth'
   alignY?: 'top' | 'center' | 'bottom'
   alignX?: 'left' | 'center' | 'right'
   ifNeed?: boolean
   container?: HTMLElement
 }
 
-// TODO: JSDoc
+/**
+ * Replacement of scrollIntoView logic
+ * @param {HTMLElement} target - the target to which the scroll is applied
+ * @param {Object} [settings] - redefine default settings
+ * @param {string} settings.type - scroll type
+ * @param {string} settings.alignY - vertical alignment
+ * @param {string} settings.alignX - horizontal alignment
+ * @param {boolean} settings.ifNeed - scroll if the element is not fully visible
+ * @param {HTMLElement} settings.container - the container relative to which the scroll occurs
+ * 
+ * @example - default settings
+ * {
+ *   type: 'none',
+ *   alignY: 'top',
+ *   alignX: 'left',
+ *   ifNeed: true,
+ *   container: document.body,
+ * }
+ */
 export default function customScroll(
   target: HTMLLIElement,
   settings?: Settings,
@@ -22,7 +37,7 @@ export default function customScroll(
     alignY,
     alignX,
     ifNeed,
-    container, // TODO: add description -> scrollable container
+    container,
   }: Settings = {
     type: 'none',
     alignY: 'top',
@@ -32,10 +47,12 @@ export default function customScroll(
     ...settings,
   };
 
+  if (!isHTMLElement(target) && !isHTMLElement(container)) return;
   if (ifNeed && isFits(target, container)) return;
 
+  // !WARN: Do not change the order of code execution
+  
   const scroll = target.parentElement!;
-
   const distance = getDistance(target, container);
 
   const {
@@ -58,22 +75,7 @@ export default function customScroll(
 
   const destination = getDestination();
 
-  //  correct distance depend on available scroll space
-  if (destination.x < 0) {
-    distance.x = -scrollOffset.left;
-  }
-
-  if (destination.y < 0) {
-    distance.y = -scrollOffset.top;
-  }
-
-  if (distance.x > scrollOffset.right) {
-    distance.x = scrollOffset.right;
-  }
-
-  if (distance.y > scrollOffset.bottom) {
-    distance.y = scrollOffset.bottom;
-  }
+  applyScrollCorrection();
 
   distance.x = axisRound(distance.x);
   distance.y = axisRound(distance.y);
@@ -114,7 +116,7 @@ export default function customScroll(
         return new Promise(resolver);
       }
 
-      case 'ease': {
+      case 'smooth': {
         // https://www.mathway.com/ru/Graph
 
         const getParabolaHeight = (percent: number) => 2 * Math.pow(percent, 2);
@@ -154,6 +156,9 @@ export default function customScroll(
     }
   }
 
+  /**
+   * Calculate alignment corrections by type
+   */
   function getAlignCorrection() {
     let alignCorrectionX = 0,
         alignCorrectionY = 0;
@@ -175,6 +180,28 @@ export default function customScroll(
       x: Math.round(alignCorrectionX),
       y: Math.round(alignCorrectionY),
     };
+  }
+
+  /**
+   * Correct distance in case if scroll distance bigger than available scroll space.
+   * Actual when target is close to sides: top, left, right, bottom
+   */
+  function applyScrollCorrection() {
+    if (destination.x < 0) {
+      distance.x = -scrollOffset.left;
+    }
+
+    if (destination.y < 0) {
+      distance.y = -scrollOffset.top;
+    }
+
+    if (distance.x > scrollOffset.right) {
+      distance.x = scrollOffset.right;
+    }
+
+    if (distance.y > scrollOffset.bottom) {
+      distance.y = scrollOffset.bottom;
+    }
   }
 
   function getScrollOffset() {
