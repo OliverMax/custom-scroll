@@ -2,7 +2,7 @@ import getPosition from './getPosition';
 
 export default function isFits(
   target: HTMLElement,
-  container: HTMLElement = document.body,
+  container: HTMLElement,
 ): boolean {
   const {
     top: targetTop,
@@ -23,5 +23,5 @@ export default function isFits(
     targetRight <= containerRight &&
     targetTop >= containerTop &&
     targetBottom <= containerBottom
-  );  
+  );
 }

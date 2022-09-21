@@ -1,13 +1,9 @@
 import "./style.scss";
-import { customScroll } from './utils/dom';
-
-const TYPE: 'none' | 'linear' | 'smooth' = 'smooth';
-const IF_NEED = false;
-const ALIGN_X: 'left' | 'center' | 'right' = 'center';
-const ALIGN_Y: 'top' | 'center' | 'bottom' = 'center';
+import { scrollToTarget } from './utils';
 
 document.addEventListener('DOMContentLoaded', () => {
   const inputEl = document.querySelector('input')!;
+  const ulEl = document.querySelector('ul')!;
   const sectionEl = document.querySelector('section')!;
 
   const findBlockEl = (id: string) => document.getElementById(id);
@@ -16,12 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const blockEl = findBlockEl(inputEl.value);
     
     if (blockEl instanceof HTMLLIElement) {
-      customScroll(blockEl, {
-        type: TYPE,
+      scrollToTarget({
+        target: blockEl,
         container: sectionEl,
-        ifNeed: IF_NEED,
-        alignX: ALIGN_X,
-        alignY: ALIGN_Y,
+        scroll: ulEl,
+        always: true,
       })
         ?.then(() => {
           console.log('+');
@@ -31,12 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   sectionEl?.addEventListener('click', ({ target }) => {
     if (target instanceof HTMLLIElement) {
-      customScroll(target, {
-        type: TYPE,
+      scrollToTarget({
+        target: target,
         container: sectionEl,
-        ifNeed: IF_NEED,
-        alignX: ALIGN_X,
-        alignY: ALIGN_Y,
+        scroll: ulEl,
+        always: true,
       })
         ?.then(() => {
           console.log('+');
